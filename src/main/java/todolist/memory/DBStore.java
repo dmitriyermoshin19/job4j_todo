@@ -8,100 +8,75 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.query.Query;
 import todolist.models.Item;
+import java.util.function.Function;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class DBStore {
     private static final DBStore INSTANCE = new DBStore();
     private static final Logger LOG = LogManager.getLogger(DBStore.class.getName());
     private final SessionFactory factory = new Configuration()
-            .configure("items.cfg.xml")
+            .configure("todolist.cfg.xml")
             .buildSessionFactory();
 
     public static DBStore getInstance() {
         return INSTANCE;
     }
 
-    public void addItem(Item item) {
-        Session session = factory.openSession();
-        Transaction transaction = session.beginTransaction();
+    private <T> T tx(final Function<Session, T> command) {
+        final Session session = factory.openSession();
+        final Transaction tx = session.beginTransaction();
         try {
-            session.save(item);
-            session.getTransaction().commit();
-        } catch (Exception e) {
-            transaction.rollback();
+            T rsl = command.apply(session);
+            tx.commit();
+            return rsl;
+        } catch (final Exception e) {
+            session.getTransaction().rollback();
             LOG.error(e.getMessage(), e);
+            throw e;
         } finally {
             session.close();
         }
+    }
+
+    public void addItem(Item item) {
+        this.tx(
+                session -> session.save(item)
+        );
     }
 
     public Item findById(int id) {
-        Item item = new Item();
-        Session session = factory.openSession();
-        Transaction transaction = session.beginTransaction();
-        try {
-            item = session.get(Item.class, id);
-            session.getTransaction().commit();
-        } catch (Exception e) {
-            transaction.rollback();
-            LOG.error(e.getMessage(), e);
-        } finally {
-            session.close();
-        }
-        return item;
+        return this.tx(
+                session -> session.get(Item.class, id)
+        );
     }
 
     public void updateItem(Item item) {
-        Session session = factory.openSession();
-        Transaction transaction = session.beginTransaction();
-        try {
-            Query query = session.createQuery("UPDATE "
-                    + "todolist.models.Item SET done = :done1 where id = :id");
-            query.setParameter("done1", item.isDone());
-            query.setParameter("id", item.getId());
-            query.executeUpdate();
-            session.getTransaction().commit();
-        } catch (Exception e) {
-            transaction.rollback();
-            LOG.error(e.getMessage(), e);
-        } finally {
-            session.close();
-        }
+        this.tx(
+                session -> {
+                    Query query = session.createQuery("UPDATE "
+                            + "todolist.models.Item "
+                            + "SET done = :done1 where id = :id");
+                    query.setParameter("done1", item.isDone());
+                    query.setParameter("id", item.getId());
+                    query.executeUpdate();
+                    return null;
+                }
+        );
     }
 
     public List<Item> findAll() {
-        List result = new ArrayList<>();
-        Session session = factory.openSession();
-        Transaction transaction = session.beginTransaction();
-        try {
-            result = session.createQuery("FROM "
-                    + "todolist.models.Item ORDER BY id").list();
-            session.getTransaction().commit();
-        } catch (Exception e) {
-            transaction.rollback();
-            LOG.error(e.getMessage(), e);
-        } finally {
-            session.close();
-        }
-        return result;
+        return this.tx(
+                session -> session.createQuery("FROM "
+                        + "todolist.models.Item ORDER BY id").list()
+        );
     }
 
     public List<Item> showFilterItems() {
-        List result = new ArrayList<>();
-        Session session = factory.openSession();
-        Transaction transaction = session.beginTransaction();
-        try {
-            result = session.createQuery("FROM "
-                    + "todolist.models.Item "
-                    + "WHERE done = false ORDER BY id").list();
-            session.getTransaction().commit();
-        } catch (Exception e) {
-            transaction.rollback();
-            LOG.error(e.getMessage(), e);
-        }
-        return result;
+        return this.tx(
+                session -> session.createQuery("FROM "
+                        + "todolist.models.Item "
+                        + "WHERE done = false ORDER BY id").list()
+        );
     }
-
 }
