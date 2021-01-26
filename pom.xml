@@ -18,8 +18,9 @@
   </properties>
 
   <!--
-  <dependency> hamcrest, junit, log4j
-     <profile>
+  <dependency> hamcrest, junit, log4j, mockito, powermock,
+               commons-dbcp2, postgresql, jstl, taglibs, gson, servlet, hibernate
+     <profile> jdbc:postgresql, travis
      <plugin> javadoc, checkstyle, jacoco
     -->
   <dependencies>
@@ -49,9 +50,109 @@
       <version>2.13.0</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>3.2.4</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <version>2.0.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito2</artifactId>
+      <version>2.0.2</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-dbcp2</artifactId>
+      <version>2.4.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.2.10</version>
+    </dependency>
+
+    <dependency>
+      <groupId>jstl</groupId>
+      <artifactId>jstl</artifactId>
+      <version>1.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.taglibs</groupId>
+      <artifactId>taglibs-standard-impl</artifactId>
+      <version>1.2.5</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.8.6</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>4.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>jstl</artifactId>
+      <version>1.2</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-core -->
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+      <version>5.4.12.Final</version>
+    </dependency>
+
   </dependencies>
 
   <profiles>
+    <profile>
+      <id>test</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <db.url>jdbc:postgresql://127.0.0.1:5432/todolist</db.url>
+        <db.username>postgres</db.username>
+        <db.password>password</db.password>
+        <db.driver>org.postgresql.Driver</db.driver>
+      </properties>
+    </profile>
+    <profile>
+      <id>production</id>
+      <properties>
+        <db.url>jdbc:postgresql://127.0.0.1:5432/todolist</db.url>
+        <db.username>postgres</db.username>
+        <db.password>password</db.password>
+        <db.driver>org.postgresql.Driver</db.driver>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>travis</id>
+      <properties>
+        <db.url>jdbc:postgresql://localhost/todolist</db.url>
+        <db.username>postgres</db.username>
+        <db.password></db.password>
+        <db.driver>org.postgresql.Driver</db.driver>
+      </properties>
+    </profile>
 
   </profiles>
 
