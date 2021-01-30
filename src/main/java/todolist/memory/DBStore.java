@@ -8,6 +8,8 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.query.Query;
 import todolist.models.Item;
+import todolist.models.User;
+
 import java.util.function.Function;
 
 import java.util.List;
@@ -77,6 +79,18 @@ public class DBStore {
                 session -> session.createQuery("FROM "
                         + "todolist.models.Item "
                         + "WHERE done = false ORDER BY id").list()
+        );
+    }
+
+    public void addUser(User user) {
+        this.tx(session -> session.save(user));
+    }
+
+    public User findByEmail(String email) {
+        return (User) this.tx(
+                session -> session
+                        .createQuery("FROM User WHERE email ='" + email + "'")
+                        .getSingleResult()
         );
     }
 }
