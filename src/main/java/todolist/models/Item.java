@@ -3,6 +3,7 @@ package todolist.models;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -14,7 +15,8 @@ public class Item {
     private int id;
     @Column(name = "description")
     private String desc;
-    private Timestamp created;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date created;
     private boolean done;
 
     @ManyToOne
@@ -26,7 +28,7 @@ public class Item {
 
     public Item(String desc) {
         this.desc = desc;
-        this.created = new Timestamp(System.currentTimeMillis());
+        this.created = new Date(System.currentTimeMillis());
         this.done = false;
     }
 
@@ -57,11 +59,11 @@ public class Item {
         this.desc = desc;
     }
 
-    public Timestamp getCreated() {
+    public Date getCreated() {
         return created;
     }
 
-    public void setCreated(Timestamp created) {
+    public void setCreated(Date created) {
         this.created = created;
     }
 
