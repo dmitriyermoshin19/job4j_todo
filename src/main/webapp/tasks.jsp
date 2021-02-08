@@ -1,3 +1,5 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page contentType="text/html; charset=UTF-8" %>
 <!doctype html>
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
@@ -41,6 +43,12 @@
                 table.append('<td>' + el.user.name + '</td>')
                 table.append('<td>' + el.desc + '</td>')
                 table.append('<td>' + el.created + '</td>')
+                let result = '';
+                let categories = el.categories;
+                for (let i = 0; i < categories.length; i++) {
+                    result += categories[i]['name'] + "\n";
+                }
+                table.append('<td>' + result + '</td>')
                 if (el.done === false) {
                     table.append('<td>Надо выполнить' +
                         '<div class="row float-right" style="margin-right: 20px">' +
@@ -100,12 +108,12 @@
         }
     }
 
-    function addNewTask(text) {
+    function addNewTask(text, ids) {
         if (text !== '') {
             $.ajax({
                 type: 'Post',
                 url: 'http://localhost:8080/TODO_list/addTask',
-                data: {text: text}
+                data: {text: text, cIds : ids}
             }).done(function () {
                 checkFlag()
                 return true;
@@ -135,6 +143,21 @@
             $('#u').replaceWith('<div>' + data.name + ' | Выйти</div>')
         })
     })
+
+    $(document).ready(function () {
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:8080/TODO_list/addTask",
+            dataType: "json",
+            success: function (data) {
+                let categories = "";
+                for (let i = 0; i < data.length; i++) {
+                    categories += "<option value=" + data[i]['id'] + ">" + data[i]['name'] + "</option>";
+                }
+                $('#cIds').html(categories);
+            }
+        })
+    })
 </script>
 <div class="row" id="user">
     <ul class="nav">
@@ -162,9 +185,13 @@
                 <td>
                     <form>
                         <input type="text" id="text" style="width: 600px" placeholder="Введите описание..."/>
-                        <button type="reset" class="btn btn-success" onclick="return addNewTask($('#text').val())">
+                        <button type="reset" class="btn btn-success" onclick="return addNewTask($('#text').val(), $('#cIds').val())">
                             Добавить задачу
                         </button>
+                        <div class="col-sm-5">
+                            <label for="cIds" style="font-weight: bold">Category</label>
+                            <select class="custom-select" id="cIds" multiple></select>
+                        </div>
                     </form>
                 </td>
             </tr>
@@ -190,6 +217,7 @@
                 <th>Автор</th>
                 <th style="width: 300px">Задача</th>
                 <th>Дата создания</th>
+                <th>Категория</th>
                 <th>Процесс выполнения</th>
             </tr>
             </thead>

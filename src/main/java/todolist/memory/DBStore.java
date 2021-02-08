@@ -7,6 +7,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.query.Query;
+import todolist.models.Category;
 import todolist.models.Item;
 import todolist.models.User;
 
@@ -41,10 +42,17 @@ public class DBStore {
         }
     }
 
-    public void addItem(Item item) {
+    public Item addItem(Item item, String[] cIds) {
         this.tx(
-                session -> session.save(item)
+                session -> {
+                    for (String id : cIds) {
+                        item.addCategory(INSTANCE.findCategoryById(Integer.parseInt(id)));
+                    }
+                    session.save(item);
+                    return null;
+                }
         );
+        return item;
     }
 
     public Item findById(int id) {
@@ -56,8 +64,7 @@ public class DBStore {
     public void updateItem(Item item) {
         this.tx(
                 session -> {
-                    Query query = session.createQuery("UPDATE "
-                            + "todolist.models.Item "
+                    Query query = session.createQuery("UPDATE Item "
                             + "SET done = :done1 where id = :id");
                     query.setParameter("done1", item.isDone());
                     query.setParameter("id", item.getId());
@@ -66,18 +73,16 @@ public class DBStore {
                 }
         );
     }
-
-    public List<Item> findAll() {
-        return this.tx(
-                session -> session.createQuery("FROM "
-                        + "todolist.models.Item ORDER BY id").list()
-        );
+    public <T> List<T> findAll(Class<T> cl) {
+        return this.tx(session -> {
+            final Query query = session.createQuery("from " + cl.getName(), cl);
+            return query.list();
+        });
     }
 
     public List<Item> showFilterItems() {
         return this.tx(
-                session -> session.createQuery("FROM "
-                        + "todolist.models.Item "
+                session -> session.createQuery("FROM Item "
                         + "WHERE done = false ORDER BY id").list()
         );
     }
@@ -89,8 +94,15 @@ public class DBStore {
     public User findByEmail(String email) {
         return (User) this.tx(
                 session -> session
-                        .createQuery("FROM User WHERE email ='" + email + "'")
-                        .getSingleResult()
+                        .createQuery("FROM User WHERE email = :email1")
+                        .setParameter("email1", email)
+                        .uniqueResult()
+        );
+    }
+
+    public Category findCategoryById(int id) {
+        return this.tx(
+                session -> session.get(Category.class, id)
         );
     }
 }

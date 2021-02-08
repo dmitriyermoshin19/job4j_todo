@@ -12,6 +12,7 @@
 
         <mapping class="todolist.models.Item"/>
         <mapping class="todolist.models.User"/>
+        <mapping class="todolist.models.Category"/>
 
     </session-factory>
 </hibernate-configuration>

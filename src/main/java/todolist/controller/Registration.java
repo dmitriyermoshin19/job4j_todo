@@ -23,6 +23,6 @@ public class Registration extends HttpServlet {
         getServletContext().setAttribute("currentUser", user);
         HttpSession session = req.getSession();
         session.setAttribute("user", user);
-        resp.sendRedirect(req.getContextPath() + "/tasks.html");
+        resp.sendRedirect(req.getContextPath() + "/tasks.jsp");
     }
 }

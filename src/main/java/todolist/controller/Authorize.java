@@ -22,7 +22,7 @@ public class Authorize extends HttpServlet {
             getServletContext().setAttribute("currentUser", user);
             HttpSession sc = req.getSession();
             sc.setAttribute("user", user);
-            resp.sendRedirect(req.getContextPath() + "/tasks.html");
+            resp.sendRedirect(req.getContextPath() + "/tasks.jsp");
         } else {
             req.setAttribute("error", "Не верный email или пароль");
             req.getRequestDispatcher("index.jsp").forward(req, resp);
